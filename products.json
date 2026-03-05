@@ -1,0 +1,122 @@
+[
+    {
+        "id": "10100400073",
+        "description": "CONECTOR ETE 7512 AZ DERIVAÇÃO",
+        "quantity": 100.0,
+        "average_cost": 4.0979
+    },
+    {
+        "id": "10100400555",
+        "description": "LANTERNA LATERAL FACCHINI LED AM SEM SUPORTE",
+        "quantity": 50.0,
+        "average_cost": 17.6465
+    },
+    {
+        "id": "10100400199",
+        "description": "LANTERNA DE PLACA PRADOLUX (544)",
+        "quantity": 10.0,
+        "average_cost": 16.6751
+    },
+    {
+        "id": "10100400178",
+        "description": "LAMPADA 69 24 V (PERFIL ALTO)",
+        "quantity": 10.0,
+        "average_cost": 1.1104
+    },
+    {
+        "id": "10100400179",
+        "description": "LAMPADA 69 24 V (PERFIL BAIXO)",
+        "quantity": 10.0,
+        "average_cost": 6.3504
+    },
+    {
+        "id": "10100400142",
+        "description": "FUZIVEL LAMINA 30 AMPERES",
+        "quantity": 20.0,
+        "average_cost": 0.4780
+    },
+    {
+        "id": "10100400011",
+        "description": "BACK BUZZER 24 V (4002)",
+        "quantity": 5.0,
+        "average_cost": 19.2363
+    },
+    {
+        "id": "10100400255",
+        "description": "SIRENE DE RÉ (DNI4127)",
+        "quantity": 5.0,
+        "average_cost": 18.5159
+    },
+    {
+        "id": "10100400130",
+        "description": "FIO BRANCO 1,5",
+        "quantity": 100.0,
+        "average_cost": 2.1669
+    },
+    {
+        "id": "10100400024",
+        "description": "CABO FLEXIVEL 2 X 1",
+        "quantity": 400.0,
+        "average_cost": 4.7610
+    },
+    {
+        "id": "10100400260",
+        "description": "SUPORTE FUZIVEL LAMINA",
+        "quantity": 20.0,
+        "average_cost": 3.7720
+    },
+    {
+        "id": "10100400264",
+        "description": "TERMINAL ENCAIXE FEMEA (IM182S)",
+        "quantity": 200.0,
+        "average_cost": 0.4501
+    },
+    {
+        "id": "10100400230",
+        "description": "LUVA TERMINAL ENCAIXE FEMEA",
+        "quantity": 200.0,
+        "average_cost": 0.1573
+    },
+    {
+        "id": "10100400035",
+        "description": "CHAVE DE ALERTA DO FORD CARGO",
+        "quantity": 20.0,
+        "average_cost": 40.7518
+    },
+    {
+        "id": "10100400025",
+        "description": "CABO FLEXIVEL 2 X 1,5",
+        "quantity": 100.0,
+        "average_cost": 3.8284
+    },
+    {
+        "id": "10100400028",
+        "description": "CABO FLEXIVEL 4 X 1",
+        "quantity": 100.0,
+        "average_cost": 7.5887
+    },
+    {
+        "id": "10100400587",
+        "description": "CHICOTE REPARO ETE 5961",
+        "quantity": 20.0,
+        "average_cost": 50.6394
+    },
+    {
+        "id": "10100400119",
+        "description": "ESPAGUETE CORRUGADO 3/8 (25MTs)",
+        "quantity": 6.0,
+        "average_cost": 30.7130
+    },
+    {
+        "id": "10100400120",
+        "description": "ESPAGUETE CORRUGADO 7/8 (25MTs)",
+        "quantity": 3.0,
+        "average_cost": 152.5257
+    },
+    {
+        "id": "10100400572",
+        "description": "FIO FLEXIVEL 12 AZUL 2,50",
+        "quantity": 100.0,
+        "average_cost": 3.2916
+    }
+]
