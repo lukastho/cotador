@@ -23,6 +23,10 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
 ]
 
+# Global semaphore to control concurrency
+# Limits to 3 simultaneous browser instances
+browser_semaphore = asyncio.Semaphore(3)
+
 def get_stealth_driver():
     if not HAS_STEALTH:
         raise Exception("Bibliotecas stealth não instaladas.")
@@ -54,24 +58,18 @@ def scrape_mercadolivre_stealth(query, part_code=None, region="Goiânia"):
     results = []
 
     try:
-        # Refine query: Name + Code + Region
         refinement = part_code if part_code else ""
         full_query = f"{query} {refinement} {region}".strip()
         search_url = f"https://lista.mercadolivre.com.br/{urllib.parse.quote(full_query)}"
 
         driver.get(search_url)
-
-        # Human-like sleep: random between 4 and 9 seconds
         time.sleep(random.uniform(4, 9))
 
-        # Select items
         items = driver.find_elements(By.CSS_SELECTOR, '.ui-search-layout__item, .ui-search-result__wrapper')
 
         for item in items[:5]:
             try:
                 title = item.find_element(By.CSS_SELECTOR, '.ui-search-item__title').text
-
-                # Quality filter: ignore 'usado', 'conserto', 'defeito'
                 if any(bad in title.lower() for bad in ['usado', 'conserto', 'defeito']):
                     continue
 
@@ -96,7 +94,7 @@ def scrape_mercadolivre_stealth(query, part_code=None, region="Goiânia"):
                 continue
 
     except Exception as e:
-        print(f"Erro no scraper stealth: {e}")
+        print(f"Erro no scraper stealth para '{query}': {e}")
     finally:
         driver.quit()
 
@@ -104,7 +102,7 @@ def scrape_mercadolivre_stealth(query, part_code=None, region="Goiânia"):
 
 async def scrape_mock(query):
     """Fallback logic when real scraper is not possible or desired."""
-    await asyncio.sleep(random.uniform(1, 2))
+    await asyncio.sleep(random.uniform(1, 3))
     mock_data = {
         "Conector ETE 7512": [{"title": "Conector Derivação ETE 7512 Azul", "price": 4.50, "store": "Loja Elétrica Goiânia (Simulado)", "link": "https://example.com/ete7512"}],
         "Lanterna Lateral Facchini LED": [{"title": "Lanterna Lateral Facchini LED Amarela", "price": 16.50, "store": "Auto Peças Goiás (Simulado)", "link": "https://example.com/lanterna-facchini"}],
@@ -116,22 +114,21 @@ async def scrape_mock(query):
     return mock_data.get(query, [{"title": f"{query} Original", "price": 10.0, "store": "Distribuidora Regional (Simulado)", "link": "https://example.com/item"}])
 
 async def get_best_price(query, part_code=None, region="Goiânia"):
-    # Priority is real stealth scraping
-    # However, in sandboxes like this, it often fails due to Chrome environment.
-    # We provide the code but allow mock fallback.
-    if os.environ.get("USE_MOCK", "false").lower() == "true":
-        return await scrape_mock(query)
-
-    try:
-        # Since scrape_mercadolivre_stealth is synchronous, we run it in a thread pool or just directly
-        # For simplicity in this script:
-        loop = asyncio.get_event_loop()
-        res = await loop.run_in_executor(None, scrape_mercadolivre_stealth, query, part_code, region)
-        if not res:
+    """
+    Tries to get real price from multiple sources using a semaphore to control concurrency.
+    """
+    async with browser_semaphore:
+        if os.environ.get("USE_MOCK", "false").lower() == "true":
             return await scrape_mock(query)
-        return res
-    except Exception:
-        return await scrape_mock(query)
+
+        try:
+            loop = asyncio.get_event_loop()
+            res = await loop.run_in_executor(None, scrape_mercadolivre_stealth, query, part_code, region)
+            if not res:
+                return await scrape_mock(query)
+            return res
+        except Exception:
+            return await scrape_mock(query)
 
 if __name__ == "__main__":
     test_query = "Sirene de Ré (DNI4127)"
