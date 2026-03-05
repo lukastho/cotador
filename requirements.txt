@@ -1,5 +1,6 @@
 pandas
-playwright
-beautifulsoup4
 openpyxl
-pytest
+undetected-chromedriver
+selenium
+selenium-stealth
+setuptools

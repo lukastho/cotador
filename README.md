@@ -1,34 +1,36 @@
-# Buscador de Preços Elétricos - Goiânia
+# Buscador de Preços Elétricos - Versão Stealth (Goiânia)
 
-Este programa automatiza a busca de preços em tempo real para uma lista de 20 itens elétricos, comparando-os com custos médios predefinidos e gerando um relatório em Excel com destaques de oportunidades.
+Este programa automatiza a busca de preços em tempo real para itens elétricos da Solicitação de Compra 627, comparando-os com custos de referência e gerando um relatório em Excel.
 
-## Funcionalidades
-- Busca em marketplaces (Mercado Livre, etc.) com foco na região de Goiânia.
-- Cálculo de variação percentual (Δ%) entre o preço encontrado e o custo médio.
-- Destaque visual (cor verde) para itens com preço pelo menos 5% abaixo do custo médio.
-- Exportação automática para Excel (.xlsx) com data e hora.
+## Funcionalidades Stealth
+- **Camuflagem:** Utiliza `undetected-chromedriver` e `selenium-stealth` para evitar detecção por bots.
+- **Comportamento Humano:** Delays aleatórios entre 4 e 9 segundos e User-Agents rotativos.
+- **Busca Refinada:** Combina nome do produto com código da peça para maior precisão.
+- **Filtro de Qualidade:** Ignora anúncios de itens usados, com defeito ou para conserto.
 
 ## Como Executar
 1. Instale as dependências:
    ```bash
    pip install -r requirements.txt
-   playwright install chromium
    ```
 2. Inicie a busca:
    ```bash
    python3 main.py run
    ```
-3. Liste os produtos configurados:
+   *Nota: O script prioriza vendedores da região de Goiânia/Goiás.*
+
+3. Verifique a lista de produtos:
    ```bash
    python3 main.py list
    ```
 
 ## Configuração
-Os itens de busca e seus custos médios são armazenados no arquivo `products.json`. Sinta-se à vontade para editar este arquivo para adicionar novos itens ou atualizar os preços de referência.
+- `products.json`: Contém os itens, códigos de peça e custos de referência da FOTO 627.
+- `main.py`: Interface CLI.
+- `scraper.py`: Lógica de raspagem stealth e fallback.
+- `data_processor.py`: Cálculo de viabilidade (OPORTUNIDADE vs ACIMA DO ORÇAMENTO).
+- `excel_exporter.py`: Geração do relatório formatado com destaques em verde.
 
-## Estrutura do Projeto
-- `main.py`: Interface de linha de comando.
-- `scraper.py`: Lógica de extração de dados e fallback.
-- `data_processor.py`: Tratamento de dados e cálculos com Pandas.
-- `excel_exporter.py`: Geração do arquivo formatado.
-- `products.json`: Banco de dados de produtos e custos.
+## Requisitos
+- Python 3.x
+- Google Chrome instalado no sistema.

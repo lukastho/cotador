@@ -1,169 +1,140 @@
 import asyncio
-from playwright.async_api import async_playwright
+import random
 import json
 import urllib.parse
 import re
+import os
+import time
 
-async def scrape_mercadolivre(query, region="Goiânia"):
+# Attempt to import stealth libraries
+try:
+    import undetected_chromedriver as uc
+    from selenium_stealth import stealth
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+    HAS_STEALTH = True
+except ImportError:
+    HAS_STEALTH = False
+
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+]
+
+def get_stealth_driver():
+    if not HAS_STEALTH:
+        raise Exception("Bibliotecas stealth não instaladas.")
+
+    options = uc.ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    user_agent = random.choice(USER_AGENTS)
+    options.add_argument(f'user-agent={user_agent}')
+
+    driver = uc.Chrome(options=options)
+
+    stealth(driver,
+            languages=["pt-BR", "pt"],
+            vendor="Google Inc.",
+            platform="Win32",
+            webgl_vendor="Intel Inc.",
+            renderer="Intel Iris OpenGL Engine",
+            fix_hairline=True,
+            )
+    return driver
+
+def scrape_mercadolivre_stealth(query, part_code=None, region="Goiânia"):
     """
-    Scrapes Mercado Livre for a specific query, prioritizing Goiânia.
+    Stealth scraper for Mercado Livre with human-like behavior.
     """
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            locale="pt-BR"
-        )
-        page = await context.new_page()
+    driver = get_stealth_driver()
+    results = []
 
-        # Enhanced query for regional relevance
-        search_query = f"{query} {region}"
-        url = f"https://www.mercadolivre.com.br/search?as_word={urllib.parse.quote(search_query)}"
+    try:
+        # Refine query: Name + Code + Region
+        refinement = part_code if part_code else ""
+        full_query = f"{query} {refinement} {region}".strip()
+        search_url = f"https://lista.mercadolivre.com.br/{urllib.parse.quote(full_query)}"
 
-        try:
-            await page.goto(url, wait_until="domcontentloaded")
-            # Wait for results container
-            await page.wait_for_selector('.ui-search-layout__item, .ui-search-result__wrapper', timeout=5000)
+        driver.get(search_url)
 
-            items = await page.evaluate('''() => {
-                const results = [];
-                const titles = document.querySelectorAll('.ui-search-item__title');
-                for (let titleEl of titles) {
-                    let container = titleEl.closest('.ui-search-result__wrapper, .ui-search-layout__item');
-                    if (!container) continue;
-                    const priceEl = container.querySelector('.andes-money-amount__fraction');
-                    const centsEl = container.querySelector('.andes-money-amount__cents');
-                    const linkEl = container.querySelector('a.ui-search-link');
-                    if (priceEl) {
-                        let price = priceEl.innerText.replace(/[.]/g, '').replace(/[,]/g, '');
-                        if (centsEl) price += '.' + centsEl.innerText;
-                        results.push({
-                            title: titleEl.innerText,
-                            price: parseFloat(price),
-                            link: linkEl ? linkEl.href : ''
-                        });
-                    }
-                    if (results.length >= 3) break;
-                }
-                return results;
-            }''')
+        # Human-like sleep: random between 4 and 9 seconds
+        time.sleep(random.uniform(4, 9))
 
-            # Keywords filter
-            keywords = [k for k in re.findall(r'\w+', query.upper()) if len(k) > 2]
-            results = []
-            for item in items:
-                if all(k in item['title'].upper() for k in keywords):
-                    item['store'] = "Mercado Livre"
-                    results.append(item)
+        # Select items
+        items = driver.find_elements(By.CSS_SELECTOR, '.ui-search-layout__item, .ui-search-result__wrapper')
 
-            await browser.close()
-            return results
-        except:
-            await browser.close()
-            return []
+        for item in items[:5]:
+            try:
+                title = item.find_element(By.CSS_SELECTOR, '.ui-search-item__title').text
 
-async def scrape_amazon(query):
-    """
-    Scrapes Amazon.com.br for a specific query.
-    """
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            locale="pt-BR"
-        )
-        page = await context.new_page()
+                # Quality filter: ignore 'usado', 'conserto', 'defeito'
+                if any(bad in title.lower() for bad in ['usado', 'conserto', 'defeito']):
+                    continue
 
-        url = f"https://www.amazon.com.br/s?k={urllib.parse.quote(query)}"
-        try:
-            await page.goto(url, wait_until="domcontentloaded")
-            await page.wait_for_selector('[data-component-type="s-search-result"]', timeout=5000)
+                price_text = item.find_element(By.CSS_SELECTOR, '.andes-money-amount__fraction').text
+                price = float(price_text.replace('.', '').replace(',', ''))
 
-            items = await page.evaluate('''() => {
-                const results = [];
-                const elements = document.querySelectorAll('[data-component-type="s-search-result"]');
-                for (let el of elements) {
-                    const titleEl = el.querySelector('h2');
-                    const priceWhole = el.querySelector('.a-price-whole');
-                    const priceFraction = el.querySelector('.a-price-fraction');
-                    const linkEl = el.querySelector('a.a-link-normal.s-no-outline');
-                    if (titleEl && priceWhole) {
-                        let price = priceWhole.innerText.replace(/[.]/g, '').replace(/[,]/g, '');
-                        if (priceFraction) price += '.' + priceFraction.innerText;
-                        results.push({
-                            title: titleEl.innerText,
-                            price: parseFloat(price),
-                            link: linkEl ? "https://www.amazon.com.br" + linkEl.getAttribute('href') : ''
-                        });
-                    }
-                    if (results.length >= 3) break;
-                }
-                return results;
-            }''')
+                try:
+                    cents = item.find_element(By.CSS_SELECTOR, '.andes-money-amount__cents').text
+                    price += float(cents) / 100
+                except:
+                    pass
 
-            # Keywords filter
-            keywords = [k for k in re.findall(r'\w+', query.upper()) if len(k) > 2]
-            results = []
-            for item in items:
-                if all(k in item['title'].upper() for k in keywords):
-                    item['store'] = "Amazon"
-                    results.append(item)
+                link = item.find_element(By.CSS_SELECTOR, 'a.ui-search-link').get_attribute('href')
 
-            await browser.close()
-            return results
-        except:
-            await browser.close()
-            return []
+                results.append({
+                    "title": title,
+                    "price": price,
+                    "link": link,
+                    "store": "Mercado Livre"
+                })
+            except:
+                continue
+
+    except Exception as e:
+        print(f"Erro no scraper stealth: {e}")
+    finally:
+        driver.quit()
+
+    return results
 
 async def scrape_mock(query):
-    """
-    Mock scraper as fallback for when both ML and Amazon fail.
-    """
-    # Simulate network delay
-    await asyncio.sleep(0.1)
-
-    # Simple logic to generate relevant mock data based on query
+    """Fallback logic when real scraper is not possible or desired."""
+    await asyncio.sleep(random.uniform(1, 2))
     mock_data = {
-        "CONECTOR ETE 7512": [
-            {"title": "Conector Derivação ETE 7512 Azul - Rainha das Sete", "price": 4.50, "store": "Loja Elétrica Goiânia (Simulado)", "link": "https://example.com/ete7512"},
-            {"title": "Kit 100 Conectores ETE 7512 AZ", "price": 3.90, "store": "Mercado Livre (Simulado)", "link": "https://mercadolivre.com.br/ete7512"}
-        ],
-        "LANTERNA LATERAL FACCHINI": [
-            {"title": "Lanterna Lateral Facchini LED Amarela", "price": 16.50, "store": "Auto Peças Goiás (Simulado)", "link": "https://example.com/lanterna-facchini"},
-            {"title": "Lanterna Facchini Original Bivolt", "price": 18.20, "store": "Mercado Livre (Simulado)", "link": "https://mercadolivre.com.br/facchini"}
-        ],
-        "SIRENE DE RÉ": [
-            {"title": "Sirene de Ré DNI 4127 Bivolt", "price": 17.50, "store": "Goiânia Acessórios (Simulado)", "link": "https://example.com/sirene-dni"},
-            {"title": "Sirene de Ré 24V Universal", "price": 19.00, "store": "Amazon (Simulado)", "link": "https://amazon.com.br/sirene"}
-        ]
+        "Conector ETE 7512": [{"title": "Conector Derivação ETE 7512 Azul", "price": 4.50, "store": "Loja Elétrica Goiânia (Simulado)", "link": "https://example.com/ete7512"}],
+        "Lanterna Lateral Facchini LED": [{"title": "Lanterna Lateral Facchini LED Amarela", "price": 16.50, "store": "Auto Peças Goiás (Simulado)", "link": "https://example.com/lanterna-facchini"}],
+        "Lanterna de Placa Pradolux (544)": [{"title": "Lanterna Placa Pradolux", "price": 15.00, "store": "Distribuidora Regional (Simulado)", "link": "https://example.com/pradolux"}],
+        "Sirene de Ré (DNI4127)": [{"title": "Sirene de Ré DNI 4127 Bivolt", "price": 17.50, "store": "Goiânia Acessórios (Simulado)", "link": "https://example.com/sirene-dni"}],
+        "Chicote Reparo ETE 5961": [{"title": "Chicote Reparo ETE 5961", "price": 55.00, "store": "Auto Peças Goiás (Simulado)", "link": "https://example.com/chicote"}],
+        "Cabo Flexível 2x1": [{"title": "Cabo Flexível 2x1mm", "price": 4.20, "store": "Loja Elétrica (Simulado)", "link": "https://example.com/cabo"}]
     }
+    return mock_data.get(query, [{"title": f"{query} Original", "price": 10.0, "store": "Distribuidora Regional (Simulado)", "link": "https://example.com/item"}])
 
-    # Try to find a match
-    for key in mock_data:
-        if key in query.upper():
-            return mock_data[key]
-
-    # Default mock if no specific match
-    price = 10.0 + (len(query) % 5)
-    return [{"title": f"{query} Original", "price": price, "store": "Distribuidora Regional (Simulado)", "link": "https://example.com/item"}]
-
-async def get_best_price(query, region="Goiânia"):
-    """
-    Tries to get real price from multiple sources, falls back to mock if all fail.
-    """
-    ml_results = await scrape_mercadolivre(query, region)
-    amazon_results = await scrape_amazon(query)
-
-    all_results = ml_results + amazon_results
-
-    if not all_results:
-        # If all real sources fail, use mock but mark it as simulated
+async def get_best_price(query, part_code=None, region="Goiânia"):
+    # Priority is real stealth scraping
+    # However, in sandboxes like this, it often fails due to Chrome environment.
+    # We provide the code but allow mock fallback.
+    if os.environ.get("USE_MOCK", "false").lower() == "true":
         return await scrape_mock(query)
 
-    return all_results
+    try:
+        # Since scrape_mercadolivre_stealth is synchronous, we run it in a thread pool or just directly
+        # For simplicity in this script:
+        loop = asyncio.get_event_loop()
+        res = await loop.run_in_executor(None, scrape_mercadolivre_stealth, query, part_code, region)
+        if not res:
+            return await scrape_mock(query)
+        return res
+    except Exception:
+        return await scrape_mock(query)
 
 if __name__ == "__main__":
-    test_query = "Conector ETE 7512"
+    test_query = "Sirene de Ré (DNI4127)"
+    os.environ["USE_MOCK"] = "true"
     res = asyncio.run(get_best_price(test_query))
-    print(f"Results for '{test_query}':")
     print(json.dumps(res, indent=2, ensure_ascii=False))
