@@ -14,43 +14,49 @@ def list_products():
 
     with open('products.json', 'r', encoding='utf-8') as f:
         products = json.load(f)
-        print("\n=== LISTA DE ITENS PARA BUSCA ===")
+        print("\n" + "="*85)
+        print(f"{'#':<3} | {'PRODUTO':<45} | {'CUSTO REF. (FOTO)':>15}")
+        print("-"*85)
         for i, p in enumerate(products):
-            print(f"{i+1:2d}. {p['description']:<40} | Custo: R$ {p['average_cost']:>8.2f}")
-        print("=================================\n")
+            print(f"{i+1:2d} | {p['description'][:45]:<45} | R$ {p['average_cost']:>12.2f}")
+        print("="*85 + "\n")
 
 async def search_and_store(product, results_dict):
     """Worker to search for a single product and store results."""
     desc = product['description']
     part_code = product.get('part_code')
-    print(f"Iniciando busca: {desc}...")
+    print(f"Buscando preço atual para: {desc}...")
     res = await get_best_price(desc, part_code=part_code, region="Goiânia")
     results_dict[desc] = res
-    print(f"Finalizado: {desc}")
+    print(f"OK -> {desc}")
 
 async def run_search():
     """Main execution flow: stealth scrape (parallel), process, and export."""
-    # 1. Show all items simultaneously at the start
+    # Show all items at once as requested
     list_products()
 
-    print("Iniciando busca STEALTH paralela para Goiânia...\n")
+    print(f"Iniciando localização de melhores preços em tempo real para os {len(json.load(open('products.json')))} itens...\n")
 
     with open('products.json', 'r', encoding='utf-8') as f:
         products = json.load(f)
 
     found_results = {}
 
-    # 2. Use asyncio.gather for parallel execution
+    # Parallel execution
     tasks = [search_and_store(p, found_results) for p in products]
     await asyncio.gather(*tasks)
 
-    print("\nProcessando dados (Versão Stealth)...")
+    print("\nCalculando viabilidade e gerando relatório...\n")
     df = process_results('products.json', found_results)
 
-    # Show summary table in terminal
-    print("\n=== RESUMO DOS RESULTADOS ===")
-    print(df.to_string(index=False))
-    print("==============================\n")
+    # Adjusted terminal summary for 20 items
+    print("="*120)
+    print(f"{'PRODUTO':<40} | {'PREÇO WEB':>12} | {'REF. FOTO':>12} | {'STATUS':<20}")
+    print("-"*120)
+    for _, row in df.iterrows():
+        price_web = f"R$ {row['Melhor Preço Web']:.2f}" if row['Melhor Preço Web'] else "N/A"
+        print(f"{row['Produto'][:40]:<40} | {price_web:>12} | R$ {row['Custo Referência FOTO']:>9.2f} | {row['Status_Compra']:<20}")
+    print("="*120 + "\n")
 
     print("Exportando para Excel...")
     filename = export_to_excel(df)
@@ -58,11 +64,11 @@ async def run_search():
 
 def print_help():
     print("""
-Buscador de Preços Eletricos - Versão STEALTH (Simultâneo)
+Buscador de Preços Eletricos - Versão STEALTH (Full 20 Itens)
 Comandos:
-  run     - Inicia a busca stealth para todos os itens.
-  list    - Mostra os produtos atuais no arquivo JSON.
-  help    - Mostra esta ajuda.
+  run     - Inicia a busca para os 20 itens da SC 627.
+  list    - Mostra os produtos atuais.
+  help    - Ajuda.
     """)
 
 if __name__ == "__main__":
