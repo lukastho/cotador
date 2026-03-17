@@ -21,7 +21,7 @@ def export_to_excel(df, filename_prefix="Relatorio_Precos_Stealth"):
     green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
 
     for row_idx, status in enumerate(df["Status_Compra"], start=2): # Headers are row 1
-        if status == 'OPORTUNIDADE':
+        if status == 'OPORTUNIDADE DE COMPRA':
             # Highlight the whole row
             for col_idx in range(1, len(df.columns) + 1):
                 cell = worksheet.cell(row=row_idx, column=col_idx)

@@ -45,10 +45,12 @@ def process_results(products_file, found_results):
         var_percent = calculate_percentage_variation(price_found, avg_cost)
 
         # Calculation of Viability
-        # If price < average_cost: OPORTUNIDADE
-        # If price > average_cost: ACIMA DO ORÇAMENTO
-        if price_found < avg_cost:
-            status = 'OPORTUNIDADE'
+        # If price is 5% or more cheaper than average_cost: OPORTUNIDADE DE COMPRA
+        # Otherwise: ACIMA DO ORÇAMENTO or DENTRO DO ORÇAMENTO
+        if var_percent <= -5.0:
+            status = 'OPORTUNIDADE DE COMPRA'
+        elif price_found <= avg_cost:
+            status = 'DENTRO DO ORÇAMENTO'
         else:
             status = 'ACIMA DO ORÇAMENTO'
 
