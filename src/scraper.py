@@ -100,8 +100,9 @@ def scrape_mercadolivre_stealth(query, part_code=None, region="Goiânia"):
                 title_el = item.find_element(By.CSS_SELECTOR, '.ui-search-item__title')
                 title = title_el.text
 
-                # Qualidade: Ignorar usados/defeito
-                if any(bad in title.lower() for bad in ['usado', 'conserto', 'defeito']):
+                # Qualidade: Ignorar usados, recondicionados ou com defeito
+                forbidden_terms = ['usado', 'conserto', 'defeito', 'recondicionado', 'sucata', 'quebrado']
+                if any(bad in title.lower() for bad in forbidden_terms):
                     continue
 
                 # 2. Extrair Preço
