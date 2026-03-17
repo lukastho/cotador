@@ -1,104 +1,106 @@
 [
     {
         "id": "10100400073",
-        "description": "Conector ETE 7512",
-        "average_cost": 4.09
+        "description": "CONECTOR ETE 7512 AZ DERIVAÇÃO",
+        "average_cost": 4.0979
     },
     {
         "id": "10100400555",
-        "description": "Lanterna Lateral Facchini LED",
-        "average_cost": 17.64
+        "description": "LANTERNA LATERAL FACCHINI LED AM SEM SUPORTE",
+        "average_cost": 17.6465
     },
     {
         "id": "10100400199",
-        "description": "Lanterna de Placa Pradolux (544)",
-        "average_cost": 16.67
+        "description": "LANTERNA DE PLACA PRADOLUX (544)",
+        "part_code": "544",
+        "average_cost": 16.6751
+    },
+    {
+        "id": "10100400178",
+        "description": "LAMPADA 69 24 V (PERFIL ALTO)",
+        "average_cost": 1.1104
+    },
+    {
+        "id": "10100400179",
+        "description": "LAMPADA 69 24 V (PERFIL BAIXO)",
+        "average_cost": 6.3504
+    },
+    {
+        "id": "1010040142",
+        "description": "FUZIVEL LAMINA 30 AMPERES",
+        "average_cost": 0.4780
+    },
+    {
+        "id": "10100400011",
+        "description": "BACK BUZZER 24 V (4002)",
+        "part_code": "4002",
+        "average_cost": 19.2363
     },
     {
         "id": "10100400255",
-        "description": "Sirene de Ré (DNI4127)",
+        "description": "SIRENE DE RÉ (DNI4127)",
         "part_code": "DNI4127",
-        "average_cost": 18.51
-    },
-    {
-        "id": "10100400587",
-        "description": "Chicote Reparo ETE 5961",
-        "part_code": "ETE 5961",
-        "average_cost": 50.63
-    },
-    {
-        "id": "10100400024",
-        "description": "Cabo Flexível 2x1",
-        "average_cost": 4.76
-    },
-    {
-        "id": "10100400100",
-        "description": "Lanterna Traseira LED Facchini",
-        "average_cost": 145.00
-    },
-    {
-        "id": "10100400110",
-        "description": "Interruptor de Pressão 24V",
-        "average_cost": 32.50
-    },
-    {
-        "id": "10100400120",
-        "description": "Relé Auxiliar 24V 40A",
-        "average_cost": 12.80
+        "average_cost": 18.5159
     },
     {
         "id": "10100400130",
-        "description": "Lâmpada H7 24V 70W",
-        "average_cost": 15.20
+        "description": "FIO BRANCO 1,5",
+        "average_cost": 2.1669
     },
     {
-        "id": "10100400140",
-        "description": "Fusível Lâmina 10A",
-        "average_cost": 0.55
+        "id": "10100400024",
+        "description": "CABO FLEXIVEL 2 X 1",
+        "average_cost": 4.7610
     },
     {
-        "id": "10100400150",
-        "description": "Tomada 7 Polos Alumínio",
-        "average_cost": 28.90
+        "id": "10100400260",
+        "description": "SUPORTE FUZIVEL LAMINA",
+        "average_cost": 3.7720
     },
     {
-        "id": "10100400160",
-        "description": "Cabo PP 4x1.5mm",
-        "average_cost": 8.40
-    },
-    {
-        "id": "10100400170",
-        "description": "Terminal Olhal Pré-Isolado",
-        "average_cost": 0.35
-    },
-    {
-        "id": "10100400180",
-        "description": "Fita Isolante 3M 19mm x 20m",
-        "average_cost": 14.50
-    },
-    {
-        "id": "10100400190",
-        "description": "Conduíte Corrugado 1/2\"",
-        "average_cost": 2.10
-    },
-    {
-        "id": "10100400200",
-        "description": "Lanterna Delimitadora LED (Bico de Pato)",
-        "average_cost": 22.30
-    },
-    {
-        "id": "10100400210",
-        "description": "Interruptor Painel Caçamba",
-        "average_cost": 45.00
-    },
-    {
-        "id": "10100400220",
-        "description": "Sensor de Caçamba Levantada",
-        "average_cost": 89.90
+        "id": "10100400264",
+        "description": "TERMINAL ENCAIXE FEMEA (IM182S)",
+        "average_cost": 0.4501
     },
     {
         "id": "10100400230",
-        "description": "Farol de Trabalho LED 48W",
-        "average_cost": 55.00
+        "description": "LUVA TERMINAL ENCAIXE FEMEA",
+        "average_cost": 0.1573
+    },
+    {
+        "id": "10100400035",
+        "description": "CHAVE DE ALERTA DO FORD CARGO",
+        "average_cost": 40.7518
+    },
+    {
+        "id": "10100400025",
+        "description": "CABO FLEXIVEL 2 X 1,5",
+        "average_cost": 3.8284
+    },
+    {
+        "id": "10100400028",
+        "description": "CABO FLEXIVEL 4 X 1",
+        "average_cost": 7.5887
+    },
+    {
+        "id": "10100400587",
+        "description": "CHICOTE REPARO ETE 5961",
+        "part_code": "ETE 5961",
+        "average_cost": 50.6394
+    },
+    {
+        "id": "10100400119",
+        "description": "ESPAGUETE CORRUGADO 3/8 (25MTS)",
+        "average_cost": 30.7130
+    },
+    {
+        "id": "10100400120",
+        "description": "ESPAGUETE CORRUGADO 7/8 (25MTS)",
+        "average_cost": 152.5257
+    },
+    {
+        "id": "10100400572",
+        "description": "FIO FLEXIVEL 12 AZUL 2,50",
+        "average_cost": 3.2916
     }
 ]

@@ -10,12 +10,16 @@ def calculate_percentage_variation(web_price, ref_cost):
         return 0.0
     return ((web_price - ref_cost) / ref_cost) * 100
 
-def process_results(products_file, found_results):
+def process_results(products_source, found_results):
     """
     Processes the raw results and compares them with the reference costs (FOTO).
+    products_source can be a path to a JSON file or a list of product dictionaries.
     """
-    with open(products_file, 'r', encoding='utf-8') as f:
-        products = json.load(f)
+    if isinstance(products_source, str):
+        with open(products_source, 'r', encoding='utf-8') as f:
+            products = json.load(f)
+    else:
+        products = products_source
 
     df_rows = []
 

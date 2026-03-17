@@ -16,10 +16,10 @@ def list_products():
 
     with open(PRODUCTS_FILE, 'r', encoding='utf-8') as f:
         products = json.load(f)
-        print("\n=== LISTA DE ITENS PARA BUSCA ===")
+        print("\n=== LISTA DE ITENS PARA BUSCA (SOLICITAÇÃO 627) ===")
         for i, p in enumerate(products):
-            print(f"{i+1:2d}. {p['description']:<40} | Custo: R$ {p['average_cost']:>8.2f}")
-        print("=================================\n")
+            print(f"{i+1:2d}. {p['description']:<50} | Custo: R$ {p['average_cost']:>8.4f}")
+        print("===================================================\n")
 
 async def search_and_store(product, results_dict, region="Goiânia"):
     """Worker to search for a single product and store results."""
@@ -30,58 +30,71 @@ async def search_and_store(product, results_dict, region="Goiânia"):
     results_dict[desc] = res
     print(f"Finalizado: {desc}")
 
-async def run_search(region="Goiânia"):
+async def run_search(products=None, region="Goiânia"):
     """Main execution flow: stealth scrape (parallel), process, and export."""
-    # 1. Show all items simultaneously at the start
-    list_products()
+    if products is None:
+        if not os.path.exists(PRODUCTS_FILE):
+            print(f"Arquivo {PRODUCTS_FILE} não encontrado.")
+            return
+        with open(PRODUCTS_FILE, 'r', encoding='utf-8') as f:
+            products = json.load(f)
 
-    print(f"Iniciando busca STEALTH paralela para {region}...\n")
-
-    if not os.path.exists(PRODUCTS_FILE):
-        print(f"Arquivo {PRODUCTS_FILE} não encontrado.")
-        return
-
-    with open(PRODUCTS_FILE, 'r', encoding='utf-8') as f:
-        products = json.load(f)
+    print(f"\nIniciando busca STEALTH para {region} ({len(products)} itens)...\n")
 
     found_results = {}
-
-    # 2. Use asyncio.gather for parallel execution
     tasks = [search_and_store(p, found_results, region=region) for p in products]
     await asyncio.gather(*tasks)
 
-    print("\nProcessando dados (Versão Stealth)...")
-    df = process_results(PRODUCTS_FILE, found_results)
+    print("\nProcessando dados e gerando relatório...")
+    # Handle both full list (from file) and specific item (from list)
+    source = products if isinstance(products, list) and len(products) == 1 and products[0].get("id") == "CUSTOM" else PRODUCTS_FILE
+    df = process_results(source, found_results)
 
     # Show summary table in terminal
     print("\n=== RESUMO DOS RESULTADOS ===")
     print(df.to_string(index=False))
     print("==============================\n")
 
-    print("Exportando para Excel...")
     filename = export_to_excel(df)
-    print(f"Relatório STEALTH gerado com sucesso: {filename}")
+    print(f"Relatório gerado com sucesso: {filename}")
 
-def print_help():
-    print("""
-Buscador de Preços Eletricos - Versão STEALTH (Simultâneo)
-Comandos:
-  run     - Inicia a busca stealth para todos os itens.
-  list    - Mostra os produtos atuais no arquivo JSON.
-  help    - Mostra esta ajuda.
-    """)
+async def interactive_mode(region="Goiânia"):
+    print("\n=== BUSCADOR DE PREÇOS ELÉTRICOS (STEALTH) ===")
+    print(f"Região de busca: {region}")
+    print("----------------------------------------------")
+
+    while True:
+        list_products()
+        prompt = "\nDigite o NOME de um produto para buscar OU pressione [ENTER] para atualizar a lista completa (ou 'sair'): "
+        user_input = input(prompt).strip()
+
+        if user_input.lower() in ['sair', 'exit', 'quit']:
+            print("Encerrando programa...")
+            break
+
+        if user_input == "":
+            print("\nAtualizando lista completa do PDF...")
+            await run_search(region=region)
+        else:
+            print(f"\nBuscando produto específico: {user_input}")
+            # Create a temporary product object for the custom search
+            custom_product = {
+                "id": "CUSTOM",
+                "description": user_input,
+                "average_cost": 0.0 # Placeholder for custom items
+            }
+            await run_search(products=[custom_product], region=region)
+
+        print("\n--- Ciclo finalizado. Voltando ao menu principal ---")
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print_help()
-    else:
-        command = sys.argv[1].lower()
-        if command == "run":
-            region = sys.argv[2] if len(sys.argv) > 2 else "Goiânia"
-            if "USE_MOCK" not in os.environ:
-                os.environ["USE_MOCK"] = "true"
-            asyncio.run(run_search(region=region))
-        elif command == "list":
-            list_products()
-        else:
-            print_help()
+    region = sys.argv[1] if len(sys.argv) > 1 else "Goiânia"
+
+    # Force mock mode for safety if not specified
+    if "USE_MOCK" not in os.environ:
+        os.environ["USE_MOCK"] = "true"
+
+    try:
+        asyncio.run(interactive_mode(region=region))
+    except KeyboardInterrupt:
+        print("\nPrograma interrompido pelo usuário.")
