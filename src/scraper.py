@@ -17,29 +17,38 @@ try:
 except ImportError:
     HAS_STEALTH = False
 
+# Rotating User-Agents to avoid detection
 USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 ]
 
 # Global semaphore to control concurrency
-# Limits to 3 simultaneous browser instances
+# Limits to 3 simultaneous browser instances to save resources
 browser_semaphore = asyncio.Semaphore(3)
 
 def get_stealth_driver():
+    """
+    Configures and returns an undetected-chromedriver instance with stealth settings.
+    """
     if not HAS_STEALTH:
-        raise Exception("Bibliotecas stealth não instaladas.")
+        raise Exception("Bibliotecas stealth (undetected-chromedriver, selenium-stealth) não instaladas.")
 
     options = uc.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
+
+    # User-Agent rotation
     user_agent = random.choice(USER_AGENTS)
     options.add_argument(f'user-agent={user_agent}')
 
     driver = uc.Chrome(options=options)
 
+    # Apply extra stealth measures
     stealth(driver,
             languages=["pt-BR", "pt"],
             vendor="Google Inc.",
@@ -62,14 +71,20 @@ def scrape_mercadolivre_stealth(query, part_code=None, region="Goiânia"):
         full_query = f"{query} {refinement} {region}".strip()
         search_url = f"https://lista.mercadolivre.com.br/{urllib.parse.quote(full_query)}"
 
+        print(f"Buscando: {full_query}")
         driver.get(search_url)
-        time.sleep(random.uniform(4, 9))
+
+        # Random sleep between 4 and 9 seconds to simulate human behavior
+        sleep_time = random.uniform(4, 9)
+        print(f"Delay stealth: {sleep_time:.2f}s")
+        time.sleep(sleep_time)
 
         items = driver.find_elements(By.CSS_SELECTOR, '.ui-search-layout__item, .ui-search-result__wrapper')
 
         for item in items[:5]:
             try:
                 title = item.find_element(By.CSS_SELECTOR, '.ui-search-item__title').text
+                # Filter out used or defective items
                 if any(bad in title.lower() for bad in ['usado', 'conserto', 'defeito']):
                     continue
 
@@ -102,7 +117,8 @@ def scrape_mercadolivre_stealth(query, part_code=None, region="Goiânia"):
 
 async def scrape_mock(query):
     """Fallback logic when real scraper is not possible or desired."""
-    await asyncio.sleep(random.uniform(1, 3))
+    await asyncio.sleep(random.uniform(1, 2))
+    # ... mock data logic remains the same ...
     mock_data = {
         "Conector ETE 7512": [{"title": "Conector Derivação ETE 7512 Azul", "price": 4.50, "store": "Loja Elétrica Goiânia (Simulado)", "link": "https://example.com/ete7512"}],
         "Lanterna Lateral Facchini LED": [{"title": "Lanterna Lateral Facchini LED Amarela", "price": 16.50, "store": "Auto Peças Goiás (Simulado)", "link": "https://example.com/lanterna-facchini"}],
