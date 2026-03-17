@@ -2,12 +2,12 @@ import pandas as pd
 from openpyxl.styles import PatternFill
 from datetime import datetime
 
-def export_to_excel(df, filename_prefix="Relatorio_Precos_Stealth"):
+def export_to_excel(df, filename_prefix="Cotacao_Cacamba"):
     """
     Exports the DataFrame to Excel with formatting.
-    Items marked as 'OPORTUNIDADE' are highlighted in green.
+    Items marked as 'OPORTUNIDADE DE COMPRA' are highlighted in green.
     """
-    date_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"{filename_prefix}_{date_str}.xlsx"
 
     # Write to Excel
