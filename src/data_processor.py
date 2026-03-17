@@ -28,10 +28,11 @@ def process_results(products_file, found_results):
         if not found:
             df_rows.append({
                 "Produto": desc,
-                "Melhor Preço Web": None,
-                "Custo Referência FOTO": avg_cost,
-                "Diferença R$": None,
-                "Link do Anúncio": "Não Encontrado",
+                "Preço Web": None,
+                "Custo Referência": avg_cost,
+                "Diferença em R$": None,
+                "Variação %": None,
+                "Link": "Não Encontrado",
                 "Status_Compra": "NÃO ENCONTRADO"
             })
             continue
@@ -53,11 +54,11 @@ def process_results(products_file, found_results):
 
         df_rows.append({
             "Produto": desc,
-            "Melhor Preço Web": price_found,
-            "Custo Referência FOTO": avg_cost,
-            "Diferença R$": f"R$ {diff_real:.2f}",
+            "Preço Web": price_found,
+            "Custo Referência": avg_cost,
+            "Diferença em R$": f"R$ {diff_real:.2f}",
+            "Link": best_match['link'],
             "Variação %": f"{var_percent:+.2f}%",
-            "Link do Anúncio": best_match['link'],
             "Status_Compra": status
         })
 
