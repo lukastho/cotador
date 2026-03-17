@@ -21,21 +21,21 @@ def list_products():
             print(f"{i+1:2d}. {p['description']:<40} | Custo: R$ {p['average_cost']:>8.2f}")
         print("=================================\n")
 
-async def search_and_store(product, results_dict):
+async def search_and_store(product, results_dict, region="Goiânia"):
     """Worker to search for a single product and store results."""
     desc = product['description']
     part_code = product.get('part_code')
-    print(f"Iniciando busca: {desc}...")
-    res = await get_best_price(desc, part_code=part_code, region="Goiânia")
+    print(f"Iniciando busca ({region}): {desc}...")
+    res = await get_best_price(desc, part_code=part_code, region=region)
     results_dict[desc] = res
     print(f"Finalizado: {desc}")
 
-async def run_search():
+async def run_search(region="Goiânia"):
     """Main execution flow: stealth scrape (parallel), process, and export."""
     # 1. Show all items simultaneously at the start
     list_products()
 
-    print("Iniciando busca STEALTH paralela para Goiânia...\n")
+    print(f"Iniciando busca STEALTH paralela para {region}...\n")
 
     if not os.path.exists(PRODUCTS_FILE):
         print(f"Arquivo {PRODUCTS_FILE} não encontrado.")
@@ -47,7 +47,7 @@ async def run_search():
     found_results = {}
 
     # 2. Use asyncio.gather for parallel execution
-    tasks = [search_and_store(p, found_results) for p in products]
+    tasks = [search_and_store(p, found_results, region=region) for p in products]
     await asyncio.gather(*tasks)
 
     print("\nProcessando dados (Versão Stealth)...")
@@ -77,9 +77,10 @@ if __name__ == "__main__":
     else:
         command = sys.argv[1].lower()
         if command == "run":
+            region = sys.argv[2] if len(sys.argv) > 2 else "Goiânia"
             if "USE_MOCK" not in os.environ:
                 os.environ["USE_MOCK"] = "true"
-            asyncio.run(run_search())
+            asyncio.run(run_search(region=region))
         elif command == "list":
             list_products()
         else:

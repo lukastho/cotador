@@ -73,10 +73,17 @@ def scrape_mercadolivre_stealth(query, part_code=None, region="Goiânia"):
         if part_code and part_code.lower() not in query.lower():
             query_base = f"{query} {part_code}"
 
-        full_query = f"{query_base} {region}".strip()
-        search_url = f"https://lista.mercadolivre.com.br/{urllib.parse.quote(full_query)}"
+        full_query = f"{query_base}".strip()
 
-        print(f"Buscando no Mercado Livre: {full_query}")
+        # We append the region refinement directly to the URL to prioritize Goiânia/Goiás
+        # This is a more effective way to trigger ML's location filtering
+        region_slug = ""
+        if "goiânia" in region.lower() or "goiás" in region.lower():
+            region_slug = "_Estado_Goiás"
+
+        search_url = f"https://lista.mercadolivre.com.br/{urllib.parse.quote(full_query)}{region_slug}"
+
+        print(f"Buscando no Mercado Livre (Prioridade {region}): {full_query}")
         driver.get(search_url)
 
         # Random sleep between 4 and 9 seconds to simulate human behavior
