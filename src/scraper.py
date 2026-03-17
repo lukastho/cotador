@@ -6,7 +6,7 @@ import re
 import os
 import time
 
-# Attempt to import stealth libraries
+# Tentativa de importar bibliotecas stealth para evitar detecção por robôs
 try:
     import undetected_chromedriver as uc
     from selenium_stealth import stealth
@@ -17,7 +17,7 @@ try:
 except ImportError:
     HAS_STEALTH = False
 
-# Rotating User-Agents to avoid detection
+# Lista de User-Agents rotativos para simular diferentes navegadores e plataformas
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
@@ -26,29 +26,29 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 ]
 
-# Global semaphore to control concurrency
-# Limits to 3 simultaneous browser instances to save resources
+# Semáforo global para controlar a concorrência
+# Limita a 3 instâncias simultâneas de navegador para economizar memória e evitar bans por IP
 browser_semaphore = asyncio.Semaphore(3)
 
 def get_stealth_driver():
     """
-    Configures and returns an undetected-chromedriver instance with stealth settings.
+    Configura e retorna uma instância do undetected-chromedriver com medidas stealth.
     """
     if not HAS_STEALTH:
         raise Exception("Bibliotecas stealth (undetected-chromedriver, selenium-stealth) não instaladas.")
 
     options = uc.ChromeOptions()
-    options.add_argument('--headless')
+    options.add_argument('--headless') # Roda sem interface gráfica
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
 
-    # User-Agent rotation
+    # Rotação de User-Agent para cada nova instância
     user_agent = random.choice(USER_AGENTS)
     options.add_argument(f'user-agent={user_agent}')
 
     driver = uc.Chrome(options=options)
 
-    # Apply extra stealth measures
+    # Medidas extras contra detecção (JS injection)
     stealth(driver,
             languages=["pt-BR", "pt"],
             vendor="Google Inc.",
@@ -61,51 +61,57 @@ def get_stealth_driver():
 
 def scrape_mercadolivre_stealth(query, part_code=None, region="Goiânia"):
     """
-    Stealth scraper for Mercado Livre with human-like behavior.
+    Scraper focado no Mercado Livre com comportamento humano.
+
+    PARA ALTERAR A URL:
+    - O padrão atual é: https://lista.mercadolivre.com.br/{termo-de-busca}{slug-de-estado}
+    - Se a estrutura mudar, ajuste a variável 'search_url' abaixo.
     """
     driver = get_stealth_driver()
     results = []
 
     try:
-        # Construct the query: Name + Part Code + Region
-        # We ensure the part_code is included if it's not already in the query string
+        # Refinamento de busca: Nome + Código da Peça
         query_base = query
-        if part_code and part_code.lower() not in query.lower():
+        if part_code and str(part_code).lower() not in query.lower():
             query_base = f"{query} {part_code}"
 
         full_query = f"{query_base}".strip()
 
-        # We append the region refinement directly to the URL to prioritize Goiânia/Goiás
-        # This is a more effective way to trigger ML's location filtering
+        # Priorização Regional: Goiânia/Goiás
+        # O Mercado Livre usa o sufixo '_Estado_Goiás' para filtrar por UF na URL
         region_slug = ""
-        if "goiânia" in region.lower() or "goiás" in region.lower():
+        if "goiânia" in region.lower() or "goiás" in region.lower() or "goias" in region.lower():
             region_slug = "_Estado_Goiás"
 
+        # CONSTRUÇÃO DA URL: Altere aqui caso o ML mude o padrão de busca
         search_url = f"https://lista.mercadolivre.com.br/{urllib.parse.quote(full_query)}{region_slug}"
 
         print(f"Buscando no Mercado Livre (Prioridade {region}): {full_query}")
         driver.get(search_url)
 
-        # Random sleep between 4 and 9 seconds to simulate human behavior
+        # Delay aleatório entre 4 e 9 segundos (Comportamento Humano)
         sleep_time = random.uniform(4, 9)
-        print(f"Delay stealth: {sleep_time:.2f}s")
+        print(f"Pausa Stealth: {sleep_time:.2f}s")
         time.sleep(sleep_time)
 
-        # Updated selectors for more reliability
+        # SELETORES CSS: Se o site mudar, altere as classes abaixo
+        # 'li.ui-search-layout__item' é o container de cada anúncio
         items = driver.find_elements(By.CSS_SELECTOR, 'li.ui-search-layout__item')
 
-        for item in items[:5]:
+        for item in items[:5]: # Analisa os 5 primeiros resultados
             try:
-                # 1. Extrair Título
+                # 1. Título do Anúncio
                 title_el = item.find_element(By.CSS_SELECTOR, '.ui-search-item__title')
                 title = title_el.text
 
-                # Qualidade: Ignorar usados, recondicionados ou com defeito
+                # FILTRO DE QUALIDADE: Descarta usados, sucatas e defeituosos
                 forbidden_terms = ['usado', 'conserto', 'defeito', 'recondicionado', 'sucata', 'quebrado']
                 if any(bad in title.lower() for bad in forbidden_terms):
                     continue
 
-                # 2. Extrair Preço
+                # 2. Preço (Inteiro e Decimais)
+                # O ML separa o preço em 'fraction' (reais) e 'cents' (centavos)
                 price_integer = item.find_element(By.CSS_SELECTOR, '.andes-money-amount__fraction').text
                 price = float(price_integer.replace('.', '').replace(',', ''))
 
@@ -115,7 +121,7 @@ def scrape_mercadolivre_stealth(query, part_code=None, region="Goiânia"):
                 except:
                     pass
 
-                # 3. Extrair Link
+                # 3. Link do Anúncio
                 link = item.find_element(By.CSS_SELECTOR, 'a.ui-search-link').get_attribute('href')
 
                 results.append({
@@ -125,47 +131,48 @@ def scrape_mercadolivre_stealth(query, part_code=None, region="Goiânia"):
                     "store": "Mercado Livre"
                 })
             except:
-                continue
+                continue # Pula anúncios com erro de extração
 
     except Exception as e:
-        print(f"Erro no scraper stealth para '{query}': {e}")
+        print(f"Erro no scraper para '{query}': {e}")
     finally:
-        driver.quit()
+        driver.quit() # Garante o fechamento do navegador
 
     return results
 
 async def scrape_mock(query):
-    """Fallback logic when real scraper is not possible or desired."""
-    await asyncio.sleep(random.uniform(1, 2))
-    # ... mock data logic remains the same ...
+    """Lógica de simulação (Mock) para testes sem gastar recursos de rede."""
+    await asyncio.sleep(random.uniform(0.5, 1.5))
     mock_data = {
-        "Conector ETE 7512": [{"title": "Conector Derivação ETE 7512 Azul", "price": 4.50, "store": "Loja Elétrica Goiânia (Simulado)", "link": "https://example.com/ete7512"}],
-        "Lanterna Lateral Facchini LED": [{"title": "Lanterna Lateral Facchini LED Amarela", "price": 16.50, "store": "Auto Peças Goiás (Simulado)", "link": "https://example.com/lanterna-facchini"}],
-        "Lanterna de Placa Pradolux (544)": [{"title": "Lanterna Placa Pradolux", "price": 15.00, "store": "Distribuidora Regional (Simulado)", "link": "https://example.com/pradolux"}],
-        "Sirene de Ré (DNI4127)": [{"title": "Sirene de Ré DNI 4127 Bivolt", "price": 17.50, "store": "Goiânia Acessórios (Simulado)", "link": "https://example.com/sirene-dni"}],
-        "Chicote Reparo ETE 5961": [{"title": "Chicote Reparo ETE 5961", "price": 55.00, "store": "Auto Peças Goiás (Simulado)", "link": "https://example.com/chicote"}],
-        "Cabo Flexível 2x1": [{"title": "Cabo Flexível 2x1mm", "price": 4.20, "store": "Loja Elétrica (Simulado)", "link": "https://example.com/cabo"}]
+        "CONECTOR ETE 7512 AZ DERIVAÇÃO": [{"title": "Conector ETE 7512 Original", "price": 4.50, "store": "Loja Simulada", "link": "https://example.com/item"}],
+        "SIRENE DE RÉ (DNI4127)": [{"title": "Sirene de Ré DNI 4127 Bivolt", "price": 17.50, "store": "Loja Simulada", "link": "https://example.com/item"}],
+        "LANTERNA LATERAL FACCHINI LED AM SEM SUPORTE": [{"title": "Lanterna Facchini LED Amarela", "price": 16.50, "store": "Loja Simulada", "link": "https://example.com/item"}]
     }
-    return mock_data.get(query, [{"title": f"{query} Original", "price": 10.0, "store": "Distribuidora Regional (Simulado)", "link": "https://example.com/item"}])
+    return mock_data.get(query, [{"title": f"{query} Nova", "price": 10.0, "store": "Distribuidora Regional", "link": "https://example.com/item"}])
 
 async def get_best_price(query, part_code=None, region="Goiânia"):
     """
-    Tries to get real price from multiple sources using a semaphore to control concurrency.
+    Função principal de entrada que orquestra a busca.
+    Usa um semáforo para limitar a concorrência.
     """
     async with browser_semaphore:
+        # Verifica se deve usar dados simulados (definido no main.py)
         if os.environ.get("USE_MOCK", "false").lower() == "true":
             return await scrape_mock(query)
 
         try:
+            # Executa o scraper Selenium (síncrono) em um executor para não travar o loop async
             loop = asyncio.get_event_loop()
             res = await loop.run_in_executor(None, scrape_mercadolivre_stealth, query, part_code, region)
+
             if not res:
-                return await scrape_mock(query)
+                return await scrape_mock(query) # Fallback se não encontrar nada
             return res
         except Exception:
             return await scrape_mock(query)
 
 if __name__ == "__main__":
+    # Teste rápido do módulo
     test_query = "Sirene de Ré (DNI4127)"
     os.environ["USE_MOCK"] = "true"
     res = asyncio.run(get_best_price(test_query))
