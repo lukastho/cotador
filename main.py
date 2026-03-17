@@ -2,17 +2,19 @@ import asyncio
 import json
 import sys
 import os
-from scraper import get_best_price
-from data_processor import process_results
-from excel_exporter import export_to_excel
+from src.scraper import get_best_price
+from src.data_processor import process_results
+from src.excel_exporter import export_to_excel
+
+PRODUCTS_FILE = 'data/products.json'
 
 def list_products():
-    """Lists all products currently in products.json."""
-    if not os.path.exists('products.json'):
-        print("Arquivo products.json não encontrado.")
+    """Lists all products currently in data/products.json."""
+    if not os.path.exists(PRODUCTS_FILE):
+        print(f"Arquivo {PRODUCTS_FILE} não encontrado.")
         return
 
-    with open('products.json', 'r', encoding='utf-8') as f:
+    with open(PRODUCTS_FILE, 'r', encoding='utf-8') as f:
         products = json.load(f)
         print("\n=== LISTA DE ITENS PARA BUSCA ===")
         for i, p in enumerate(products):
@@ -35,7 +37,11 @@ async def run_search():
 
     print("Iniciando busca STEALTH paralela para Goiânia...\n")
 
-    with open('products.json', 'r', encoding='utf-8') as f:
+    if not os.path.exists(PRODUCTS_FILE):
+        print(f"Arquivo {PRODUCTS_FILE} não encontrado.")
+        return
+
+    with open(PRODUCTS_FILE, 'r', encoding='utf-8') as f:
         products = json.load(f)
 
     found_results = {}
@@ -45,7 +51,7 @@ async def run_search():
     await asyncio.gather(*tasks)
 
     print("\nProcessando dados (Versão Stealth)...")
-    df = process_results('products.json', found_results)
+    df = process_results(PRODUCTS_FILE, found_results)
 
     # Show summary table in terminal
     print("\n=== RESUMO DOS RESULTADOS ===")

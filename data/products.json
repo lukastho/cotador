@@ -1,0 +1,104 @@
+[
+    {
+        "id": "10100400073",
+        "description": "Conector ETE 7512",
+        "average_cost": 4.09
+    },
+    {
+        "id": "10100400555",
+        "description": "Lanterna Lateral Facchini LED",
+        "average_cost": 17.64
+    },
+    {
+        "id": "10100400199",
+        "description": "Lanterna de Placa Pradolux (544)",
+        "average_cost": 16.67
+    },
+    {
+        "id": "10100400255",
+        "description": "Sirene de Ré (DNI4127)",
+        "part_code": "DNI4127",
+        "average_cost": 18.51
+    },
+    {
+        "id": "10100400587",
+        "description": "Chicote Reparo ETE 5961",
+        "part_code": "ETE 5961",
+        "average_cost": 50.63
+    },
+    {
+        "id": "10100400024",
+        "description": "Cabo Flexível 2x1",
+        "average_cost": 4.76
+    },
+    {
+        "id": "10100400100",
+        "description": "Lanterna Traseira LED Facchini",
+        "average_cost": 145.00
+    },
+    {
+        "id": "10100400110",
+        "description": "Interruptor de Pressão 24V",
+        "average_cost": 32.50
+    },
+    {
+        "id": "10100400120",
+        "description": "Relé Auxiliar 24V 40A",
+        "average_cost": 12.80
+    },
+    {
+        "id": "10100400130",
+        "description": "Lâmpada H7 24V 70W",
+        "average_cost": 15.20
+    },
+    {
+        "id": "10100400140",
+        "description": "Fusível Lâmina 10A",
+        "average_cost": 0.55
+    },
+    {
+        "id": "10100400150",
+        "description": "Tomada 7 Polos Alumínio",
+        "average_cost": 28.90
+    },
+    {
+        "id": "10100400160",
+        "description": "Cabo PP 4x1.5mm",
+        "average_cost": 8.40
+    },
+    {
+        "id": "10100400170",
+        "description": "Terminal Olhal Pré-Isolado",
+        "average_cost": 0.35
+    },
+    {
+        "id": "10100400180",
+        "description": "Fita Isolante 3M 19mm x 20m",
+        "average_cost": 14.50
+    },
+    {
+        "id": "10100400190",
+        "description": "Conduíte Corrugado 1/2\"",
+        "average_cost": 2.10
+    },
+    {
+        "id": "10100400200",
+        "description": "Lanterna Delimitadora LED (Bico de Pato)",
+        "average_cost": 22.30
+    },
+    {
+        "id": "10100400210",
+        "description": "Interruptor Painel Caçamba",
+        "average_cost": 45.00
+    },
+    {
+        "id": "10100400220",
+        "description": "Sensor de Caçamba Levantada",
+        "average_cost": 89.90
+    },
+    {
+        "id": "10100400230",
+        "description": "Farol de Trabalho LED 48W",
+        "average_cost": 55.00
+    }
+]
