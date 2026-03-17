@@ -67,11 +67,16 @@ def scrape_mercadolivre_stealth(query, part_code=None, region="Goiânia"):
     results = []
 
     try:
-        refinement = part_code if part_code else ""
-        full_query = f"{query} {refinement} {region}".strip()
+        # Construct the query: Name + Part Code + Region
+        # We ensure the part_code is included if it's not already in the query string
+        query_base = query
+        if part_code and part_code.lower() not in query.lower():
+            query_base = f"{query} {part_code}"
+
+        full_query = f"{query_base} {region}".strip()
         search_url = f"https://lista.mercadolivre.com.br/{urllib.parse.quote(full_query)}"
 
-        print(f"Buscando: {full_query}")
+        print(f"Buscando no Mercado Livre: {full_query}")
         driver.get(search_url)
 
         # Random sleep between 4 and 9 seconds to simulate human behavior
@@ -79,24 +84,30 @@ def scrape_mercadolivre_stealth(query, part_code=None, region="Goiânia"):
         print(f"Delay stealth: {sleep_time:.2f}s")
         time.sleep(sleep_time)
 
-        items = driver.find_elements(By.CSS_SELECTOR, '.ui-search-layout__item, .ui-search-result__wrapper')
+        # Updated selectors for more reliability
+        items = driver.find_elements(By.CSS_SELECTOR, 'li.ui-search-layout__item')
 
         for item in items[:5]:
             try:
-                title = item.find_element(By.CSS_SELECTOR, '.ui-search-item__title').text
-                # Filter out used or defective items
+                # 1. Extrair Título
+                title_el = item.find_element(By.CSS_SELECTOR, '.ui-search-item__title')
+                title = title_el.text
+
+                # Qualidade: Ignorar usados/defeito
                 if any(bad in title.lower() for bad in ['usado', 'conserto', 'defeito']):
                     continue
 
-                price_text = item.find_element(By.CSS_SELECTOR, '.andes-money-amount__fraction').text
-                price = float(price_text.replace('.', '').replace(',', ''))
+                # 2. Extrair Preço
+                price_integer = item.find_element(By.CSS_SELECTOR, '.andes-money-amount__fraction').text
+                price = float(price_integer.replace('.', '').replace(',', ''))
 
                 try:
-                    cents = item.find_element(By.CSS_SELECTOR, '.andes-money-amount__cents').text
-                    price += float(cents) / 100
+                    price_decimals = item.find_element(By.CSS_SELECTOR, '.andes-money-amount__cents').text
+                    price += float(price_decimals) / 100
                 except:
                     pass
 
+                # 3. Extrair Link
                 link = item.find_element(By.CSS_SELECTOR, 'a.ui-search-link').get_attribute('href')
 
                 results.append({
