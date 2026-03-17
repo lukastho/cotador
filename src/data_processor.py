@@ -1,6 +1,15 @@
 import pandas as pd
 import json
 
+def calculate_percentage_variation(web_price, ref_cost):
+    """
+    Calculates the percentage variation using the formula:
+    ((Web Price - Ref Cost) / Ref Cost) * 100
+    """
+    if not ref_cost or ref_cost == 0:
+        return 0.0
+    return ((web_price - ref_cost) / ref_cost) * 100
+
 def process_results(products_file, found_results):
     """
     Processes the raw results and compares them with the reference costs (FOTO).
@@ -32,6 +41,7 @@ def process_results(products_file, found_results):
 
         price_found = best_match['price']
         diff_real = price_found - avg_cost
+        var_percent = calculate_percentage_variation(price_found, avg_cost)
 
         # Calculation of Viability
         # If price < average_cost: OPORTUNIDADE
@@ -46,6 +56,7 @@ def process_results(products_file, found_results):
             "Melhor Preço Web": price_found,
             "Custo Referência FOTO": avg_cost,
             "Diferença R$": f"R$ {diff_real:.2f}",
+            "Variação %": f"{var_percent:+.2f}%",
             "Link do Anúncio": best_match['link'],
             "Status_Compra": status
         })
