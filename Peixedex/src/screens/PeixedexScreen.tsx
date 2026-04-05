@@ -18,6 +18,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { useFishRecords } from '../hooks/useFishRecords';
 import { FishRecord } from '../services/storageService';
 import { RootTabParamList } from '../navigation/TabNavigator';
+import { THEME } from '../theme';
 
 const { width } = Dimensions.get('window');
 const COLUMN_COUNT = 2;
@@ -124,14 +125,14 @@ const PeixedexScreen = () => {
       >
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Filtros e Ordenação</Text>
+            <Text style={styles.modalTitle}>FILTROS_</Text>
             <TouchableOpacity onPress={() => setShowFilters(false)}>
-              <Text style={styles.closeText}>Fechar</Text>
+              <Text style={styles.closeText}>FECHAR</Text>
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.modalScroll}>
-            <Text style={styles.sectionTitle}>Raridade</Text>
+            <Text style={styles.sectionTitle}>RARIDADE</Text>
             <View style={styles.filterOptions}>
               {['Todos', 'Comum', 'Raro', 'Épico', 'Lendário'].map((r) => (
                 <TouchableOpacity
@@ -146,31 +147,31 @@ const PeixedexScreen = () => {
               ))}
             </View>
 
-            <Text style={styles.sectionTitle}>Ordenar por</Text>
+            <Text style={styles.sectionTitle}>ORDENAR</Text>
             <View style={styles.sortOptions}>
               <TouchableOpacity
                 style={[styles.sortItem, sortOption === 'date_desc' && styles.sortItemActive]}
                 onPress={() => setSortOption('date_desc')}
               >
-                <Text style={styles.sortItemText}>Data de Captura (Mais recente)</Text>
+                <Text style={[styles.sortItemText, sortOption === 'date_desc' && styles.sortItemTextActive]}>MAIS RECENTE</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.sortItem, sortOption === 'date_asc' && styles.sortItemActive]}
                 onPress={() => setSortOption('date_asc')}
               >
-                <Text style={styles.sortItemText}>Data de Captura (Mais antiga)</Text>
+                <Text style={[styles.sortItemText, sortOption === 'date_asc' && styles.sortItemTextActive]}>MAIS ANTIGA</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.sortItem, sortOption === 'alpha_asc' && styles.sortItemActive]}
                 onPress={() => setSortOption('alpha_asc')}
               >
-                <Text style={styles.sortItemText}>Ordem Alfabética (A-Z)</Text>
+                <Text style={[styles.sortItemText, sortOption === 'alpha_asc' && styles.sortItemTextActive]}>ALFABÉTICA (A-Z)</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.sortItem, sortOption === 'alpha_desc' && styles.sortItemActive]}
                 onPress={() => setSortOption('alpha_desc')}
               >
-                <Text style={styles.sortItemText}>Ordem Alfabética (Z-A)</Text>
+                <Text style={[styles.sortItemText, sortOption === 'alpha_desc' && styles.sortItemTextActive]}>ALFABÉTICA (Z-A)</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -183,19 +184,19 @@ const PeixedexScreen = () => {
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyEmoji}>🎣</Text>
       <Text style={styles.emptyTitle}>
-        {records.length === 0 ? 'Sua Peixedex está vazia!' : 'Nenhum peixe encontrado.'}
+        {records.length === 0 ? 'COLEÇÃO VAZIA_' : 'NADA ENCONTRADO_'}
       </Text>
       <Text style={styles.emptySubtitle}>
         {records.length === 0
-          ? 'Comece sua aventura capturando o seu primeiro peixe agora mesmo.'
-          : 'Tente mudar os filtros ou a sua pesquisa.'}
+          ? 'COMECE SUA AVENTURA CAPTURANDO O SEU PRIMEIRO PEIXE.'
+          : 'TENTE MUDAR OS FILTROS OU A SUA PESQUISA.'}
       </Text>
       {records.length === 0 && (
         <TouchableOpacity
           style={styles.emptyButton}
           onPress={() => navigation.navigate('Câmera')}
         >
-          <Text style={styles.emptyButtonText}>Abrir Câmera</Text>
+          <Text style={styles.emptyButtonText}>ABRIR CÂMERA</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -204,7 +205,7 @@ const PeixedexScreen = () => {
   if (loading && records.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0055CC" />
+        <ActivityIndicator size="large" color={THEME.colors.primary} />
       </View>
     );
   }
@@ -214,21 +215,22 @@ const PeixedexScreen = () => {
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <View>
-            <Text style={styles.title}>Minha Coleção</Text>
-            <Text style={styles.subtitle}>{records.length} peixes descobertos</Text>
+            <Text style={styles.title}>COLEÇÃO_</Text>
+            <Text style={styles.subtitle}>{records.length} REGISTROS</Text>
           </View>
           <TouchableOpacity
             style={styles.filterButton}
             onPress={() => setShowFilters(true)}
           >
-            <Text style={styles.filterButtonText}>⌛ Filtros</Text>
+            <Text style={styles.filterButtonText}>⌛ FILTROS</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Buscar por nome ou espécie..."
+            placeholder="BUSCAR POR NOME OU ESPÉCIE..."
+            placeholderTextColor={THEME.colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
             clearButtonMode="while-editing"
@@ -254,13 +256,13 @@ const PeixedexScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FBFF',
+    backgroundColor: THEME.colors.background,
   },
   header: {
     padding: 20,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E1E9F4',
+    backgroundColor: THEME.colors.background,
+    borderBottomWidth: 3,
+    borderBottomColor: '#000',
   },
   headerTop: {
     flexDirection: 'row',
@@ -269,37 +271,45 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 28,
+    fontWeight: '900',
+    color: THEME.colors.primary,
+    letterSpacing: -1,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
+    fontSize: 12,
+    color: THEME.colors.textSecondary,
+    fontWeight: '800',
+    letterSpacing: 1,
   },
   filterButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    backgroundColor: '#F0F5FF',
-    borderWidth: 1,
-    borderColor: '#D0E0FF',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: THEME.colors.accent,
+    borderWidth: 2,
+    borderColor: '#000',
+    shadowColor: THEME.colors.shadow,
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
   },
   filterButtonText: {
-    color: '#0055CC',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '900',
   },
   searchContainer: {
     marginTop: 5,
   },
   searchInput: {
-    backgroundColor: '#F2F4F7',
-    padding: 12,
-    borderRadius: 12,
-    fontSize: 16,
-    color: '#333',
+    backgroundColor: THEME.colors.card,
+    padding: 14,
+    borderRadius: 0,
+    fontSize: 14,
+    color: THEME.colors.text,
+    borderWidth: 2,
+    borderColor: THEME.colors.border,
+    fontWeight: '700',
   },
   listContent: {
     padding: 15,
@@ -307,46 +317,53 @@ const styles = StyleSheet.create({
   },
   card: {
     width: ITEM_SIZE,
-    backgroundColor: '#FFF',
-    borderRadius: 16,
+    backgroundColor: THEME.colors.card,
+    borderRadius: 0,
     margin: 7.5,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 2,
+    borderColor: THEME.colors.border,
+    shadowColor: THEME.colors.shadow,
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
   },
   image: {
     width: '100%',
     height: ITEM_SIZE,
-    backgroundColor: '#EEE',
+    backgroundColor: '#000',
+    borderBottomWidth: 2,
+    borderBottomColor: '#000',
   },
   info: {
-    padding: 10,
+    padding: 12,
   },
   popularName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 14,
+    fontWeight: '900',
+    color: THEME.colors.primary,
+    textTransform: 'uppercase',
   },
   rarityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 6,
   },
   rarityEmoji: {
-    fontSize: 12,
+    fontSize: 10,
     marginRight: 4,
   },
   rarityText: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 10,
+    color: THEME.colors.textSecondary,
+    fontWeight: '800',
+    textTransform: 'uppercase',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: THEME.colors.background,
   },
   emptyContainer: {
     flex: 1,
@@ -360,114 +377,127 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 24,
+    fontWeight: '900',
+    color: THEME.colors.secondary,
     marginBottom: 10,
     textAlign: 'center',
   },
   emptySubtitle: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 14,
+    color: THEME.colors.textSecondary,
     textAlign: 'center',
     marginBottom: 30,
-    lineHeight: 22,
+    fontWeight: '700',
+    lineHeight: 20,
   },
   emptyButton: {
-    backgroundColor: '#0055CC',
-    paddingVertical: 15,
+    backgroundColor: THEME.colors.primary,
+    paddingVertical: 18,
     paddingHorizontal: 30,
-    borderRadius: 30,
+    borderWidth: 3,
+    borderColor: '#000',
+    shadowColor: THEME.colors.shadow,
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
   },
   emptyButtonText: {
-    color: '#FFF',
+    color: '#000',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '900',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.8)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#FFF',
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    padding: 20,
-    maxHeight: '80%',
+    backgroundColor: THEME.colors.background,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    padding: 25,
+    maxHeight: '85%',
+    borderTopWidth: 4,
+    borderTopColor: THEME.colors.primary,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 25,
     paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEE',
+    borderBottomWidth: 2,
+    borderBottomColor: '#000',
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 24,
+    fontWeight: '900',
+    color: THEME.colors.primary,
   },
   closeText: {
-    color: '#0055CC',
-    fontWeight: 'bold',
+    color: THEME.colors.secondary,
+    fontWeight: '900',
     fontSize: 16,
   },
   modalScroll: {
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#666',
-    marginBottom: 12,
+    fontSize: 14,
+    fontWeight: '900',
+    color: THEME.colors.textSecondary,
+    marginBottom: 15,
     marginTop: 10,
+    letterSpacing: 2,
   },
   filterOptions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 25,
+    gap: 12,
+    marginBottom: 30,
   },
   filterChip: {
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: '#F5F5F5',
-    borderWidth: 1,
-    borderColor: '#EEE',
+    backgroundColor: THEME.colors.card,
+    borderWidth: 2,
+    borderColor: THEME.colors.border,
   },
   filterChipActive: {
-    backgroundColor: '#0055CC',
-    borderColor: '#0055CC',
+    backgroundColor: THEME.colors.primary,
+    borderColor: '#000',
   },
   filterChipText: {
-    color: '#666',
-    fontSize: 14,
+    color: THEME.colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '800',
   },
   filterChipTextActive: {
-    color: '#FFF',
-    fontWeight: 'bold',
+    color: '#000',
+    fontWeight: '900',
   },
   sortOptions: {
-    gap: 10,
+    gap: 12,
   },
   sortItem: {
-    padding: 15,
-    borderRadius: 12,
-    backgroundColor: '#F9F9F9',
-    borderWidth: 1,
-    borderColor: '#EEE',
+    padding: 18,
+    backgroundColor: THEME.colors.card,
+    borderWidth: 2,
+    borderColor: THEME.colors.border,
   },
   sortItemActive: {
-    borderColor: '#0055CC',
-    backgroundColor: '#F0F5FF',
+    borderColor: THEME.colors.primary,
+    backgroundColor: '#1E1E35',
   },
   sortItemText: {
-    fontSize: 15,
-    color: '#444',
+    fontSize: 14,
+    color: THEME.colors.text,
+    fontWeight: '700',
+  },
+  sortItemTextActive: {
+    color: THEME.colors.primary,
+    fontWeight: '900',
   }
 });
 

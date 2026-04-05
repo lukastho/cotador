@@ -4,6 +4,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootTabParamList } from '../navigation/TabNavigator';
 import { useFishRecords } from '../hooks/useFishRecords';
+import { THEME } from '../theme';
 
 type HomeScreenNavigationProp = BottomTabNavigationProp<RootTabParamList, 'Início'>;
 
@@ -18,12 +19,12 @@ interface Badge {
 }
 
 const BADGES: Badge[] = [
-  { id: '1', name: 'Iniciante', emoji: '🐣', description: 'Registre o seu primeiro peixe!', requiredCount: 1 },
-  { id: '2', name: 'Aprendiz', emoji: '🎣', description: 'Registre 5 peixes diferentes.', requiredCount: 5 },
-  { id: '3', name: 'Pescador', emoji: '🚣', description: 'Registre 10 peixes diferentes.', requiredCount: 10 },
-  { id: '4', name: 'Veterano', emoji: '🏆', description: 'Registre 25 peixes diferentes.', requiredCount: 25 },
-  { id: '5', name: 'Mestre Pescador', emoji: '🦈', description: 'Registre 50 peixes diferentes.', requiredCount: 50 },
-  { id: '6', name: 'Lenda dos Mares', emoji: '🔱', description: 'Complete 100 registros na Peixedex!', requiredCount: 100 },
+  { id: '1', name: 'INICIANTE', emoji: '🐣', description: 'Registre o seu primeiro peixe!', requiredCount: 1 },
+  { id: '2', name: 'APRENDIZ', emoji: '🎣', description: 'Registre 5 peixes diferentes.', requiredCount: 5 },
+  { id: '3', name: 'PESCADOR', emoji: '🚣', description: 'Registre 10 peixes diferentes.', requiredCount: 10 },
+  { id: '4', name: 'VETERANO', emoji: '🏆', description: 'Registre 25 peixes diferentes.', requiredCount: 25 },
+  { id: '5', name: 'MESTRE', emoji: '🦈', description: 'Registre 50 peixes diferentes.', requiredCount: 50 },
+  { id: '6', name: 'LENDA', emoji: '🔱', description: 'Complete 100 registros na Peixedex!', requiredCount: 100 },
 ];
 
 const HomeScreen = () => {
@@ -46,15 +47,16 @@ const HomeScreen = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.welcomeText}>Bem-vindo ao Peixedex!</Text>
-          <Text style={styles.statsText}>Descubra o mundo aquático ao seu redor.</Text>
+          <Text style={styles.welcomeText}>BEM-VINDO AO</Text>
+          <Text style={styles.brandText}>PEIXEDEX_</Text>
+          <Text style={styles.statsText}>DESCUBRA O MUNDO AQUÁTICO.</Text>
         </View>
 
         {/* Sistema de Progressão */}
         <View style={styles.progressionCard}>
           <View style={styles.progressionHeader}>
-            <Text style={styles.progressionTitle}>Sua Jornada</Text>
-            <Text style={styles.progressionCount}>{registeredCount} / {TOTAL_FISH_GOAL}</Text>
+            <Text style={styles.progressionTitle}>MISSÃO ATUAL</Text>
+            <Text style={styles.progressionCount}>{registeredCount}/{TOTAL_FISH_GOAL}</Text>
           </View>
 
           <View style={styles.progressBarBackground}>
@@ -62,7 +64,7 @@ const HomeScreen = () => {
           </View>
 
           <Text style={styles.progressionText}>
-            Você já descobriu {registeredCount} espécies de peixes!
+            VOCÊ JÁ DESCOBRIU {registeredCount} ESPÉCIES!
           </Text>
         </View>
 
@@ -87,8 +89,8 @@ const HomeScreen = () => {
           >
             <Text style={styles.buttonEmoji}>📸</Text>
             <View style={styles.buttonTextContent}>
-              <Text style={styles.buttonTitle}>Identificar Novo Peixe</Text>
-              <Text style={styles.buttonSubtitle}>Use a câmera para escanear</Text>
+              <Text style={styles.buttonTitle}>SCANEAR PEIXE</Text>
+              <Text style={styles.buttonSubtitle}>INICIAR CÂMERA DE IA</Text>
             </View>
           </TouchableOpacity>
 
@@ -98,15 +100,15 @@ const HomeScreen = () => {
           >
             <Text style={styles.buttonEmoji}>📔</Text>
             <View style={styles.buttonTextContent}>
-              <Text style={[styles.buttonTitle, styles.secondaryButtonTitle]}>Ver Minha Coleção</Text>
-              <Text style={[styles.buttonSubtitle, styles.secondaryButtonSubtitle]}>Explore sua coleção salva</Text>
+              <Text style={[styles.buttonTitle, styles.secondaryButtonTitle]}>COLEÇÃO</Text>
+              <Text style={[styles.buttonSubtitle, styles.secondaryButtonSubtitle]}>EXPLORAR SUA PEIXEDEX</Text>
             </View>
           </TouchableOpacity>
         </View>
 
-        {/* Seção de Insígnias (Resumo) */}
+        {/* Seção de Insígnias */}
         <View style={styles.badgesSection}>
-          <Text style={styles.sectionTitle}>Suas Insígnias</Text>
+          <Text style={styles.sectionTitle}>INSÍGNIAS_</Text>
           <View style={styles.badgesGrid}>
             {BADGES.map((badge) => {
               const isUnlocked = registeredCount >= badge.requiredCount;
@@ -131,7 +133,7 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FBFF',
+    backgroundColor: THEME.colors.background,
   },
   scrollContent: {
     padding: 20,
@@ -141,25 +143,39 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   welcomeText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 18,
+    fontWeight: '900',
+    color: THEME.colors.textSecondary,
+    letterSpacing: 2,
+  },
+  brandText: {
+    fontSize: 48,
+    fontWeight: '900',
+    color: THEME.colors.primary,
+    marginTop: -5,
+    letterSpacing: -2,
+    textShadowColor: THEME.colors.secondary,
+    textShadowOffset: { width: 3, height: 3 },
+    textShadowRadius: 0,
   },
   statsText: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 4,
+    fontSize: 12,
+    color: THEME.colors.textSecondary,
+    marginTop: 8,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
   progressionCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 20,
+    backgroundColor: THEME.colors.card,
+    borderRadius: 0,
     padding: 20,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
+    borderWidth: 2,
+    borderColor: THEME.colors.border,
+    shadowColor: THEME.colors.shadow,
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
   },
   progressionHeader: {
     flexDirection: 'row',
@@ -168,47 +184,59 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   progressionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 16,
+    fontWeight: '900',
+    color: THEME.colors.text,
+    letterSpacing: 1,
   },
   progressionCount: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#0055CC',
+    fontWeight: '900',
+    color: THEME.colors.primary,
   },
   progressBarBackground: {
-    height: 12,
-    backgroundColor: '#E1E9F4',
-    borderRadius: 6,
+    height: 16,
+    backgroundColor: THEME.colors.background,
+    borderRadius: 0,
     marginBottom: 12,
+    borderWidth: 2,
+    borderColor: THEME.colors.border,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#0055CC',
-    borderRadius: 6,
+    backgroundColor: THEME.colors.primary,
+    borderRadius: 0,
   },
   progressionText: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 12,
+    color: THEME.colors.textSecondary,
+    fontWeight: '700',
   },
   badgeCard: {
     flexDirection: 'row',
-    backgroundColor: '#0055CC',
-    borderRadius: 20,
+    backgroundColor: THEME.colors.accent,
+    borderRadius: 0,
     padding: 20,
     marginBottom: 30,
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#000',
+    shadowColor: THEME.colors.shadow,
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
   },
   badgeIconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 64,
+    height: 64,
+    borderRadius: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
+    borderWidth: 2,
+    borderColor: '#000',
   },
   badgeEmoji: {
     fontSize: 32,
@@ -218,19 +246,21 @@ const styles = StyleSheet.create({
   },
   badgeLabel: {
     fontSize: 10,
-    fontWeight: 'bold',
-    color: 'rgba(255,255,255,0.7)',
-    letterSpacing: 1,
+    fontWeight: '900',
+    color: THEME.colors.primary,
+    letterSpacing: 2,
   },
   badgeName: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '900',
     color: '#FFF',
     marginBottom: 2,
+    letterSpacing: 1,
   },
   badgeDescription: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.9)',
+    color: 'rgba(255,255,255,0.7)',
+    fontWeight: '600',
   },
   buttonContainer: {
     gap: 15,
@@ -238,16 +268,19 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flexDirection: 'row',
-    backgroundColor: '#E6F0FF',
-    borderRadius: 18,
+    backgroundColor: THEME.colors.primary,
+    borderRadius: 0,
     padding: 20,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#CCE0FF',
+    borderWidth: 3,
+    borderColor: '#000',
+    shadowColor: THEME.colors.shadow,
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
   },
   secondaryActionButton: {
-    backgroundColor: '#FFF',
-    borderColor: '#E1E9F4',
+    backgroundColor: THEME.colors.secondary,
   },
   buttonEmoji: {
     fontSize: 32,
@@ -257,29 +290,32 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   buttonTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#0055CC',
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#000',
+    letterSpacing: 1,
   },
   secondaryButtonTitle: {
-    color: '#333',
+    color: '#FFF',
   },
   buttonSubtitle: {
-    fontSize: 13,
-    color: '#5588DD',
+    fontSize: 12,
+    color: 'rgba(0,0,0,0.6)',
     marginTop: 2,
+    fontWeight: '800',
   },
   secondaryButtonSubtitle: {
-    color: '#777',
+    color: 'rgba(255,255,255,0.6)',
   },
   badgesSection: {
     marginBottom: 30,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '900',
+    color: THEME.colors.text,
     marginBottom: 15,
+    letterSpacing: 2,
   },
   badgesGrid: {
     flexDirection: 'row',
@@ -288,31 +324,32 @@ const styles = StyleSheet.create({
   },
   badgeChip: {
     width: '30%',
-    backgroundColor: '#FFF',
-    borderRadius: 15,
+    backgroundColor: THEME.colors.card,
+    borderRadius: 0,
     padding: 12,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E1E9F4',
+    borderWidth: 2,
+    borderColor: THEME.colors.border,
   },
   lockedBadge: {
-    backgroundColor: '#F5F5F5',
-    borderColor: '#EEE',
+    backgroundColor: '#111',
+    borderColor: '#222',
   },
   badgeChipEmoji: {
     fontSize: 24,
     marginBottom: 6,
   },
   lockedEmoji: {
-    opacity: 0.3,
+    opacity: 0.2,
   },
   badgeChipName: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 10,
+    fontWeight: '900',
+    color: THEME.colors.text,
+    letterSpacing: 1,
   },
   lockedText: {
-    color: '#AAA',
+    color: '#444',
   },
 });
 
