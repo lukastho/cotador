@@ -11,7 +11,7 @@ import {
   Dimensions
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useFishRecords } from '../hooks/useFishRecords';
 import { FishRecord } from '../services/storageService';
 import { RootTabParamList } from '../navigation/TabNavigator';
@@ -20,7 +20,7 @@ const { width } = Dimensions.get('window');
 const COLUMN_COUNT = 2;
 const ITEM_SIZE = (width - 60) / COLUMN_COUNT;
 
-type PeixedexScreenNavigationProp = BottomTabNavigationProp<RootTabParamList, 'Peixedex'>;
+type PeixedexScreenNavigationProp = StackNavigationProp<RootTabParamList, 'Peixedex'>;
 
 const PeixedexScreen = () => {
   const navigation = useNavigation<PeixedexScreenNavigationProp>();
@@ -43,7 +43,10 @@ const PeixedexScreen = () => {
   };
 
   const renderItem = ({ item }: { item: FishRecord }) => (
-    <TouchableOpacity style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate('FishDetails', { fish: item })}
+    >
       <Image source={{ uri: item.imageUri }} style={styles.image} />
       <View style={styles.info}>
         <Text style={styles.popularName} numberOfLines={1}>{item.popularName}</Text>
