@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
   Share,
   Alert
 } from 'react-native';
+import { Image } from 'expo-image';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { FishRecord } from '../services/storageService';
 
@@ -54,7 +54,13 @@ const FishDetailsScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <Image source={{ uri: fish.imageUri }} style={styles.mainImage} />
+        <Image
+          source={{ uri: fish.imageUri }}
+          style={styles.mainImage}
+          contentFit="cover"
+          transition={500}
+          cachePolicy="disk"
+        />
 
         <View style={styles.content}>
           <View style={styles.titleSection}>

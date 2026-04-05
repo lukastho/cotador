@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  Image,
   TouchableOpacity,
   ActivityIndicator,
   SafeAreaView,
@@ -13,6 +12,7 @@ import {
   Modal,
   ScrollView
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFishRecords } from '../hooks/useFishRecords';
@@ -93,7 +93,13 @@ const PeixedexScreen = () => {
       style={styles.card}
       onPress={() => navigation.navigate('FishDetails', { fish: item })}
     >
-      <Image source={{ uri: item.imageUri }} style={styles.image} />
+      <Image
+        source={{ uri: item.imageUri }}
+        style={styles.image}
+        contentFit="cover"
+        transition={300}
+        cachePolicy="disk"
+      />
       <View style={styles.info}>
         <Text style={styles.popularName} numberOfLines={1}>{item.popularName}</Text>
         <View style={styles.rarityContainer}>
