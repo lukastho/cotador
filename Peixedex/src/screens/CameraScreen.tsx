@@ -1,15 +1,41 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+  SafeAreaView,
+  Alert,
+  Modal,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
 import { CameraView, useCameraPermissions, CameraType, CameraCapturedPicture } from 'expo-camera';
+import { useNavigation } from '@react-navigation/native';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { visionService, FishIdentification } from '../services/visionService';
+import { useFishRecords } from '../hooks/useFishRecords';
+import { RootTabParamList } from '../navigation/TabNavigator';
+
+type CameraScreenNavigationProp = BottomTabNavigationProp<RootTabParamList, 'Câmera'>;
 
 const CameraScreen = () => {
+  const navigation = useNavigation<CameraScreenNavigationProp>();
   const [permission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<CameraType>('back');
   const [capturedPhoto, setCapturedPhoto] = useState<CameraCapturedPicture | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<FishIdentification | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [notes, setNotes] = useState('');
+  const [location, setLocation] = useState('Localização desconhecida'); // Simulado
   const cameraRef = useRef<CameraView>(null);
+
+  const { addRecord } = useFishRecords();
 
   if (!permission) {
     return <View />;
@@ -37,12 +63,13 @@ const CameraScreen = () => {
     }
   };
 
-  const usePhoto = async () => {
+  const identifyFish = async () => {
     if (!capturedPhoto) return;
     setLoading(true);
     try {
       const fish = await visionService.identifyFish(capturedPhoto.uri);
       setResult(fish);
+      setShowModal(true);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível identificar o peixe.');
     } finally {
@@ -50,53 +77,36 @@ const CameraScreen = () => {
     }
   };
 
-  if (result) {
-    return (
-      <SafeAreaView style={styles.resultContainer}>
-        <View style={styles.resultCard}>
-          <Text style={styles.resultTitle}>{result.name}</Text>
-          <Text style={styles.resultScientific}>{result.scientificName}</Text>
-          <View style={[styles.rarityBadge, { backgroundColor: getRarityColor(result.rarity) }]}>
-            <Text style={styles.rarityText}>{result.rarity}</Text>
-          </View>
-          <Text style={styles.resultDescription}>{result.description}</Text>
+  const handleSave = async () => {
+    if (!result || !capturedPhoto) return;
 
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => {
-              setResult(null);
-              setCapturedPhoto(null);
-            }}
-          >
-            <Text style={styles.buttonText}>Voltar</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+    try {
+      setLoading(true);
+      await addRecord({
+        popularName: result.name,
+        scientificName: result.scientificName,
+        rarity: result.rarity,
+        description: result.description,
+        imageUri: capturedPhoto.uri,
+        location: location,
+        notes: notes,
+      });
 
-  if (capturedPhoto) {
-    return (
-      <View style={styles.previewContainer}>
-        <Image source={{ uri: capturedPhoto.uri }} style={styles.preview} />
-        {loading ? (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color="#FFF" />
-            <Text style={styles.loadingText}>Identificando peixe...</Text>
-          </View>
-        ) : (
-          <View style={styles.confirmationControls}>
-            <TouchableOpacity style={styles.confirmButton} onPress={usePhoto}>
-              <Text style={styles.buttonText}>Usar Foto</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.retakeButton} onPress={() => setCapturedPhoto(null)}>
-              <Text style={styles.buttonText}>Tirar Outra</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-    );
-  }
+      setShowModal(false);
+      setResult(null);
+      setCapturedPhoto(null);
+      setNotes('');
+
+      // Redireciona para a aba Peixedex
+      navigation.navigate('Peixedex');
+
+      Alert.alert('Sucesso!', 'Peixe registrado na sua coleção.');
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível salvar o registro.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -113,6 +123,99 @@ const CameraScreen = () => {
           <View style={styles.placeholder} />
         </View>
       </CameraView>
+
+      {/* Preview da Foto Capturada */}
+      {capturedPhoto && (
+        <Modal visible={!!capturedPhoto && !showModal} transparent={false} animationType="slide">
+          <View style={styles.previewContainer}>
+            <Image source={{ uri: capturedPhoto.uri }} style={styles.preview} />
+            {loading ? (
+              <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="large" color="#FFF" />
+                <Text style={styles.loadingText}>Identificando peixe...</Text>
+              </View>
+            ) : (
+              <View style={styles.confirmationControls}>
+                <TouchableOpacity style={styles.confirmButton} onPress={identifyFish}>
+                  <Text style={styles.buttonText}>Usar Foto</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.retakeButton} onPress={() => setCapturedPhoto(null)}>
+                  <Text style={styles.buttonText}>Tirar Outra</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </Modal>
+      )}
+
+      {/* Modal de Registro */}
+      <Modal visible={showModal} animationType="slide" transparent={true}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalContent}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.modalHeader}>Novo Registro</Text>
+
+              {capturedPhoto && (
+                <Image source={{ uri: capturedPhoto.uri }} style={styles.modalImage} />
+              )}
+
+              {result && (
+                <View style={styles.fishInfoContainer}>
+                  <Text style={styles.label}>Espécie Identificada</Text>
+                  <Text style={styles.fishName}>{result.name}</Text>
+                  <Text style={styles.scientificName}>{result.scientificName}</Text>
+
+                  <View style={[styles.rarityBadge, { backgroundColor: getRarityColor(result.rarity) }]}>
+                    <Text style={styles.rarityText}>{result.rarity}</Text>
+                  </View>
+
+                  <Text style={styles.label}>Localização</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={location}
+                    onChangeText={setLocation}
+                    placeholder="Onde você pescou?"
+                  />
+
+                  <Text style={styles.label}>Notas Extras</Text>
+                  <TextInput
+                    style={[styles.input, styles.textArea]}
+                    value={notes}
+                    onChangeText={setNotes}
+                    placeholder="Adicione observações..."
+                    multiline
+                    numberOfLines={4}
+                  />
+                </View>
+              )}
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={[styles.saveButton, loading && styles.disabledButton]}
+                  onPress={handleSave}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#FFF" />
+                  ) : (
+                    <Text style={styles.buttonText}>Salvar na Peixedex</Text>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => setShowModal(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 };
@@ -130,7 +233,6 @@ const getRarityColor = (rarity: string) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     backgroundColor: '#000',
   },
   camera: {
@@ -226,58 +328,96 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 18,
   },
-  resultContainer: {
+  modalOverlay: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    padding: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
   },
-  resultCard: {
+  modalContent: {
     backgroundColor: '#FFF',
-    borderRadius: 24,
-    padding: 30,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 20,
+    maxHeight: '90%',
   },
-  resultTitle: {
-    fontSize: 32,
+  modalHeader: {
+    fontSize: 24,
     fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
     color: '#333',
-    marginBottom: 8,
   },
-  resultScientific: {
-    fontSize: 18,
-    fontStyle: 'italic',
+  modalImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 15,
+    marginBottom: 20,
+  },
+  fishInfoContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: 'bold',
     color: '#666',
-    marginBottom: 16,
+    marginBottom: 5,
+  },
+  fishName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#0055CC',
+  },
+  scientificName: {
+    fontSize: 16,
+    fontStyle: 'italic',
+    color: '#888',
+    marginBottom: 10,
   },
   rarityBadge: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginBottom: 20,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 15,
   },
   rarityText: {
     color: '#FFF',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 12,
   },
-  resultDescription: {
+  input: {
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 10,
+    padding: 12,
     fontSize: 16,
-    color: '#444',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 30,
+    marginBottom: 15,
   },
-  backButton: {
-    backgroundColor: '#2196F3',
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 30,
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  modalActions: {
+    gap: 10,
+    marginBottom: 20,
+  },
+  saveButton: {
+    backgroundColor: '#0055CC',
+    padding: 18,
+    borderRadius: 15,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    padding: 15,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#f44336',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  disabledButton: {
+    opacity: 0.6,
   }
 });
 

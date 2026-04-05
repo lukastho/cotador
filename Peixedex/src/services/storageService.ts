@@ -5,9 +5,10 @@ export interface FishRecord {
   imageUri: string;
   popularName: string;
   scientificName: string;
+  rarity: string;
+  description: string;
   date: string;
-  weight?: string;
-  length?: string;
+  notes?: string;
   location: string;
 }
 
